@@ -4,16 +4,17 @@ import utd.multicore.ds.utils.Node;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ConcurrentStack<T> {
+public class ConcurrentStack<T extends Comparable<T>> implements DataStructure<T> {
     private final AtomicReference<Node<T>> top = new AtomicReference<>();
 
-    public void push(T item) {
-        Node<T> newHead = new Node<>(item);
+    public T push(T k) {
+        Node<T> newHead = new Node<>(k);
         Node<T> oldHead;
         do {
             oldHead = top.get();
             newHead.next = oldHead;
         } while (!top.compareAndSet(oldHead, newHead));
+        return k;
     }
 
     public T pop() {
@@ -22,10 +23,33 @@ public class ConcurrentStack<T> {
         do {
             oldHead = top.get();
             if (oldHead == null) {
-                throw new RuntimeException("Stack is empty");
+                return null;
             }
             newHead = oldHead.next;
         } while (!top.compareAndSet(oldHead, newHead));
         return oldHead.item;
+    }
+
+    public boolean search(T k) {
+        return false;
+    }
+
+    public boolean add(T k) {
+        return false;
+    }
+
+    public boolean remove(T k) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        Node<T> current = top.get();
+        StringBuilder sb = new StringBuilder();
+        while (current != null) {
+            sb.append(current.item).append(", ");
+            current = current.next;
+        }
+        return sb.toString();
     }
 }

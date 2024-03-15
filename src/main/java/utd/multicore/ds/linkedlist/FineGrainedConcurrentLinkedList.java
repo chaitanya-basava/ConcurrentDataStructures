@@ -1,8 +1,8 @@
-package utd.multicore.ds;
+package utd.multicore.ds.linkedlist;
 
 import utd.multicore.ds.utils.Node;
 
-public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> {
+public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements LinkedList<T> {
     private final Node<T> head = new Node<>(null);
 
     public boolean add(T item) {
@@ -22,7 +22,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> {
                     pred.next = new Node<>(item, curr);
                     return true;
                 }
-                return false; // Item already exists
+                return false;
             } finally {
                 if (curr != null) curr.lock.unlock();
             }
@@ -45,10 +45,10 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> {
                     if (curr != null) curr.lock.lock();
                 }
                 if (curr != null && curr.item.equals(item)) {
-                    pred.next = curr.next; // Remove current node
+                    pred.next = curr.next;
                     return true;
                 }
-                return false; // Item not found
+                return false;
             } finally {
                 if (curr != null) curr.lock.unlock();
             }
@@ -65,18 +65,23 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> {
             if (curr != null) curr.lock.lock();
             try {
                 while (curr != null) {
-                    if (curr.item.equals(item)) return true; // Item found
+                    if (curr.item.equals(item)) return true;
                     pred.lock.unlock();
                     pred = curr;
                     curr = curr.next;
                     if (curr != null) curr.lock.lock();
                 }
-                return false; // Item not found
+                return false;
             } finally {
                 if (curr != null) curr.lock.unlock();
             }
         } finally {
             pred.lock.unlock();
         }
+    }
+
+    @Override
+    public String toString() {
+        return LinkedList.super.toString(head);
     }
 }
