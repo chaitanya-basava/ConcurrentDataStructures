@@ -45,45 +45,40 @@ public class Main {
         return null;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IllegalArgumentException, InterruptedException {
         CommandLine cmd = Main.parseArgs(args);
         int algoId = Integer.parseInt(cmd.getOptionValue("datastructure"));
-        int N = Integer.parseInt(cmd.getOptionValue("numThreads"));
+        int numThreads = Integer.parseInt(cmd.getOptionValue("numThreads"));
         int writeDist = Integer.parseInt(cmd.getOptionValue("writeDistribution"));
-        int C = Integer.parseInt(cmd.getOptionValue("csCount", String.valueOf(1000000)));
+        int csCount = Integer.parseInt(cmd.getOptionValue("csCount", String.valueOf(1000000)));
 
-        Actor[] actors = new Actor[N];
-        Thread[] actorThreads = new Thread[N];
+        Actor[] actors = new Actor[numThreads];
+        Thread[] actorThreads = new Thread[numThreads];
 
-        try {
-            DataStructure<Integer> ds = switch(algoId) {
-                case 0 -> new ConcurrentLinkedList<>();
-                case 1 -> new FineGrainedConcurrentLinkedList<>();
-                case 2 -> new ConcurrentStack<>();
+        DataStructure<Integer> ds = switch(algoId) {
+            case 0 -> new ConcurrentLinkedList<>();
+            case 1 -> new FineGrainedConcurrentLinkedList<>();
+            case 2 -> new ConcurrentStack<>();
+            default -> throw new IllegalStateException("Unexpected value: " + algoId);
+        };
+
+        long actorStartMillis = System.currentTimeMillis();
+        for (int i = 0; i < numThreads; i++) {
+            Actor actor = switch(algoId) {
+                case 0, 1 -> new LinkedListActor(i, csCount / numThreads, writeDist, ds);
+                case 2 -> new StackActor(i, csCount / numThreads, ds);
                 default -> throw new IllegalStateException("Unexpected value: " + algoId);
             };
-
-            long actorStartMillis = System.currentTimeMillis();
-            for (int i = 0; i < N; i++) {
-                Actor actor = switch(algoId) {
-                    case 0, 1 -> new LinkedListActor(i, C / N, writeDist, ds);
-                    case 2 -> new StackActor(i, C / N, ds);
-                    default -> throw new IllegalStateException("Unexpected value: " + algoId);
-                };
-                actors[i] = actor;
-                actorThreads[i] = new Thread(actors[i]);
-                actorThreads[i].start();
-            }
-            for (int i = 0; i < N; i++) actorThreads[i].join();
-            long actorEndMillis = System.currentTimeMillis();
-
-            logger.info(ds.toString());
-
-            double throughput = (double) C / (actorEndMillis - actorStartMillis);
-            logger.info("System Throughput: " + throughput);
-        } catch (IllegalArgumentException |
-                 InterruptedException e) {
-            throw new RuntimeException(e);
+            actors[i] = actor;
+            actorThreads[i] = new Thread(actors[i]);
+            actorThreads[i].start();
         }
+        for (int i = 0; i < numThreads; i++) actorThreads[i].join();
+        long actorEndMillis = System.currentTimeMillis();
+
+        logger.info(ds.toString());
+
+        double throughput = (double) csCount / (actorEndMillis - actorStartMillis);
+        logger.info(String.format("System Throughput: %.2f ops/ms", throughput));
     }
 }

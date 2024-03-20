@@ -6,7 +6,8 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
     private final Node<T> head = new Node<>(null);
 
     public boolean add(T item) {
-        Node<T> pred = head, curr;
+        Node<T> pred = head;
+        Node<T> curr;
         pred.lock.lock();
         try {
             curr = pred.next;
@@ -32,7 +33,8 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
     }
 
     public boolean remove(T item) {
-        Node<T> pred = head, curr;
+        Node<T> pred = head;
+        Node<T> curr;
         pred.lock.lock();
         try {
             curr = pred.next;
@@ -58,7 +60,8 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
     }
 
     public boolean search(T item) {
-        Node<T> pred = head, curr;
+        Node<T> pred = head;
+        Node<T> curr;
         pred.lock.lock();
         try {
             curr = pred.next;
