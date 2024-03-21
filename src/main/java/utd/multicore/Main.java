@@ -29,6 +29,9 @@ public class Main {
         numThreadsOption.setRequired(true);
         options.addOption(numThreadsOption);
 
+        Option keySpace = new Option("k", "keySpace", true, "input key space size (int)");
+        options.addOption(keySpace);
+
         Option opCountOption = new Option("c", "opCount", true, "total num of ops to perform");
         options.addOption(opCountOption);
 
@@ -49,6 +52,7 @@ public class Main {
         CommandLine cmd = Main.parseArgs(args);
         int algoId = Integer.parseInt(cmd.getOptionValue("datastructure"));
         int numThreads = Integer.parseInt(cmd.getOptionValue("numThreads"));
+        int keySpace = Integer.parseInt(cmd.getOptionValue("keySpace", String.valueOf(100)));
         int writeDist = Integer.parseInt(cmd.getOptionValue("writeDistribution"));
         int csCount = Integer.parseInt(cmd.getOptionValue("csCount", String.valueOf(1000000)));
 
@@ -65,7 +69,7 @@ public class Main {
         long actorStartMillis = System.currentTimeMillis();
         for (int i = 0; i < numThreads; i++) {
             Actor actor = switch(algoId) {
-                case 0, 1 -> new LinkedListActor(i, csCount / numThreads, writeDist, ds);
+                case 0, 1 -> new LinkedListActor(i, csCount / numThreads, writeDist, ds, keySpace);
                 case 2 -> new StackActor(i, csCount / numThreads, ds);
                 default -> throw new IllegalStateException("Unexpected value: " + algoId);
             };
