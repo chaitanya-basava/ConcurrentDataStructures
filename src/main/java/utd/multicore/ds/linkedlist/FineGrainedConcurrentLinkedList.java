@@ -2,8 +2,11 @@ package utd.multicore.ds.linkedlist;
 
 import utd.multicore.ds.utils.Node;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T> {
     private final Node<T> head = new Node<>(null);
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
     public void add(T item) {
         Node<T> pred = head;
@@ -20,7 +23,9 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
                     if (curr != null) curr.lock.lock();
                 }
                 if (curr == null || !curr.item.equals(item)) {
+                    rwLock.writeLock().lock();
                     this.size++;
+                    rwLock.writeLock().unlock();
                     pred.next = new Node<>(item, curr);
                 }
             } finally {
@@ -41,13 +46,15 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
             if (curr != null) curr.lock.lock();
             try {
                 while (curr != null && curr.item.compareTo(item) < 0) {
-                    pred.lock.unlock(); // Unlock predecessor
+                    pred.lock.unlock();
                     pred = curr;
                     curr = curr.next;
                     if (curr != null) curr.lock.lock();
                 }
                 if (curr != null && curr.item.equals(item)) {
+                    rwLock.writeLock().lock();
                     this.size--;
+                    rwLock.writeLock().unlock();
                     pred.next = curr.next;
                 }
             } finally {

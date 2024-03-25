@@ -65,6 +65,8 @@ public class Main {
             case 2 -> new ConcurrentStack<>();
             default -> throw new IllegalStateException("Unexpected value: " + algoId);
         };
+        ds.warmup(Integer.class, keySpace);
+        logger.info("Warmup complete: " + ds.getSize());
 
         long actorStartMillis = System.currentTimeMillis();
         for (int i = 0; i < numThreads; i++) {

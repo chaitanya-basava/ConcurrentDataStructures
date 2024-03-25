@@ -35,6 +35,10 @@ public class ConcurrentStack<T extends Comparable<T>> extends DataStructure<T> {
         this.size.decrementAndGet();
     }
 
+    @Override
+    public void warmup(Class<T> clazz, int bound) {
+    }
+
     public void search(T k) {
     }
 

@@ -11,6 +11,7 @@ public abstract class DataStructure<T extends Comparable<T>> {
     public abstract void remove(T k);
     public abstract void push(T k);
     public abstract void pop();
+    public abstract void warmup(Class<T> clazz, int bound);
 
     public int getNumAdds() {
         return numAdds;
