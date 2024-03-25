@@ -5,27 +5,27 @@ import utd.multicore.ds.utils.Node;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 // lock the entire LL based on read or write op
-public class ConcurrentLinkedList<T extends Comparable<T>> implements LinkedList<T> {
+public class ConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T> {
     private final Node<T> head = new Node<>(null);
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
 
-    public boolean search(T k) {
+    public void search(T k) {
         readLock.lock();
         try {
             Node<T> curr = head.next;
             while (curr != null) {
-                if (curr.item.equals(k)) return true;
+                if (curr.item.equals(k)) return;
                 curr = curr.next;
             }
-            return false;
         } finally {
+            this.numSearches++;
             readLock.unlock();
         }
     }
 
-    public boolean add(T k) {
+    public void add(T k) {
         writeLock.lock();
         try {
             Node<T> prev = head;
@@ -34,15 +34,16 @@ public class ConcurrentLinkedList<T extends Comparable<T>> implements LinkedList
                 prev = curr;
                 curr = curr.next;
             }
-            if (curr != null && curr.item.equals(k)) return false;
+            if (curr != null && curr.item.equals(k)) return;
+            this.size++;
             prev.next = new Node<>(k, curr);
-            return true;
         } finally {
+            this.numAdds++;
             writeLock.unlock();
         }
     }
 
-    public boolean remove(T k) {
+    public void remove(T k) {
         writeLock.lock();
         try {
             Node<T> prev = head;
@@ -51,17 +52,18 @@ public class ConcurrentLinkedList<T extends Comparable<T>> implements LinkedList
                 prev = curr;
                 curr = curr.next;
             }
-            if (curr == null || !curr.item.equals(k)) return false;
+            if (curr == null || !curr.item.equals(k)) return;
+            this.size--;
             prev.next = curr.next;
-            return true;
         } finally {
+            this.numDeletes++;
             writeLock.unlock();
         }
     }
 
     @Override
     public String toString() {
-        return LinkedList.super.toString(head);
+        return super.toString(head);
     }
 }
 

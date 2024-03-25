@@ -2,10 +2,10 @@ package utd.multicore.ds.linkedlist;
 
 import utd.multicore.ds.utils.Node;
 
-public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements LinkedList<T> {
+public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T> {
     private final Node<T> head = new Node<>(null);
 
-    public boolean add(T item) {
+    public void add(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -20,11 +20,11 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
                     if (curr != null) curr.lock.lock();
                 }
                 if (curr == null || !curr.item.equals(item)) {
+                    this.size++;
                     pred.next = new Node<>(item, curr);
-                    return true;
                 }
-                return false;
             } finally {
+                this.numAdds++;
                 if (curr != null) curr.lock.unlock();
             }
         } finally {
@@ -32,7 +32,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
         }
     }
 
-    public boolean remove(T item) {
+    public void remove(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -47,11 +47,11 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
                     if (curr != null) curr.lock.lock();
                 }
                 if (curr != null && curr.item.equals(item)) {
+                    this.size--;
                     pred.next = curr.next;
-                    return true;
                 }
-                return false;
             } finally {
+                this.numDeletes++;
                 if (curr != null) curr.lock.unlock();
             }
         } finally {
@@ -59,7 +59,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
         }
     }
 
-    public boolean search(T item) {
+    public void search(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -68,14 +68,14 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
             if (curr != null) curr.lock.lock();
             try {
                 while (curr != null) {
-                    if (curr.item.equals(item)) return true;
+                    if (curr.item.equals(item)) return;
                     pred.lock.unlock();
                     pred = curr;
                     curr = curr.next;
                     if (curr != null) curr.lock.lock();
                 }
-                return false;
             } finally {
+                this.numSearches++;
                 if (curr != null) curr.lock.unlock();
             }
         } finally {
@@ -85,6 +85,6 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> implements
 
     @Override
     public String toString() {
-        return LinkedList.super.toString(head);
+        return super.toString(head);
     }
 }

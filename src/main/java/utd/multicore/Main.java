@@ -80,7 +80,11 @@ public class Main {
         for (int i = 0; i < numThreads; i++) actorThreads[i].join();
         long actorEndMillis = System.currentTimeMillis();
 
-        logger.info(ds.toString());
+        logger.info(ds.getSize() + " " + ds);
+        logger.info("Num of Adds: " + ds.getNumAdds());
+        logger.info("Num of Deletes: " + ds.getNumDeletes());
+        logger.info("Num of Searches: " + ds.getNumSearches());
+        logger.info("Total Ops: " + (ds.getNumAdds() + ds.getNumDeletes() + ds.getNumSearches()));
 
         double throughput = (double) csCount / (actorEndMillis - actorStartMillis);
         logger.info(String.format("System Throughput: %.2f ops/ms", throughput));

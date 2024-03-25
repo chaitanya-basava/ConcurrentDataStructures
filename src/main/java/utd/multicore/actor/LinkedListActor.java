@@ -1,11 +1,8 @@
 package utd.multicore.actor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import utd.multicore.ds.DataStructure;
 
 public class LinkedListActor extends Actor {
-    private static final Logger logger = LoggerFactory.getLogger(LinkedListActor.class);
     private final DataStructure<Integer> linkedList;
     private final int bound;
 
@@ -21,19 +18,15 @@ public class LinkedListActor extends Actor {
             int operation = random.nextInt(100);
             int number = random.nextInt(this.bound);
 
-            boolean result;
             if (operation < 100 - this.writeDist) {
-                result = this.linkedList.search(number);
-                logger.info(String.format("%s found status: %s", number, result));
+                this.linkedList.search(number);
             }
             else {
                 if (random.nextBoolean()) {
-                    result = this.linkedList.add(number);
-                    logger.info(String.format("%s add status: %s", number, result));
+                    this.linkedList.add(number);
                 }
                 else {
-                    result = this.linkedList.remove(number);
-                    logger.info(String.format("%s remove status: %s", number, result));
+                    this.linkedList.remove(number);
                 }
             }
         }
