@@ -8,7 +8,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
     private final Node<T> head = new Node<>(null);
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 
-    public void add(T item) {
+    public boolean add(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -27,7 +27,9 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
                     this.size++;
                     rwLock.writeLock().unlock();
                     pred.next = new Node<>(item, curr);
+                    return true;
                 }
+                return false;
             } finally {
                 this.numAdds++;
                 if (curr != null) curr.lock.unlock();
@@ -37,7 +39,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
         }
     }
 
-    public void remove(T item) {
+    public boolean remove(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -56,7 +58,9 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
                     this.size--;
                     rwLock.writeLock().unlock();
                     pred.next = curr.next;
+                    return true;
                 }
+                return false;
             } finally {
                 this.numDeletes++;
                 if (curr != null) curr.lock.unlock();
@@ -66,7 +70,7 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
         }
     }
 
-    public void search(T item) {
+    public boolean search(T item) {
         Node<T> pred = head;
         Node<T> curr;
         pred.lock.lock();
@@ -75,12 +79,13 @@ public class FineGrainedConcurrentLinkedList<T extends Comparable<T>> extends Li
             if (curr != null) curr.lock.lock();
             try {
                 while (curr != null) {
-                    if (curr.item.equals(item)) return;
+                    if (curr.item.equals(item)) return true;
                     pred.lock.unlock();
                     pred = curr;
                     curr = curr.next;
                     if (curr != null) curr.lock.lock();
                 }
+                return false;
             } finally {
                 this.numSearches++;
                 if (curr != null) curr.lock.unlock();

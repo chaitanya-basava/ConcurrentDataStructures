@@ -9,7 +9,8 @@ public abstract class LinkedList<T extends Comparable<T>> extends DataStructure<
     public void push(T k) {
     }
 
-    public void pop() {
+    public T pop() {
+        return null;
     }
 
     public void warmup(Class<T> clazz, int bound) {

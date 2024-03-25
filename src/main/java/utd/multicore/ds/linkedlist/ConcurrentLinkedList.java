@@ -11,21 +11,22 @@ public class ConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T>
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
     private final ReentrantReadWriteLock.WriteLock writeLock = rwLock.writeLock();
 
-    public void search(T k) {
+    public boolean search(T k) {
         readLock.lock();
         try {
             Node<T> curr = head.next;
             while (curr != null) {
-                if (curr.item.equals(k)) return;
+                if (curr.item.equals(k)) return true;
                 curr = curr.next;
             }
+            return false;
         } finally {
             this.numSearches++;
             readLock.unlock();
         }
     }
 
-    public void add(T k) {
+    public boolean add(T k) {
         writeLock.lock();
         try {
             Node<T> prev = head;
@@ -34,16 +35,17 @@ public class ConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T>
                 prev = curr;
                 curr = curr.next;
             }
-            if (curr != null && curr.item.equals(k)) return;
+            if (curr != null && curr.item.equals(k)) return false;
             this.size++;
             prev.next = new Node<>(k, curr);
+            return true;
         } finally {
             this.numAdds++;
             writeLock.unlock();
         }
     }
 
-    public void remove(T k) {
+    public boolean remove(T k) {
         writeLock.lock();
         try {
             Node<T> prev = head;
@@ -52,9 +54,10 @@ public class ConcurrentLinkedList<T extends Comparable<T>> extends LinkedList<T>
                 prev = curr;
                 curr = curr.next;
             }
-            if (curr == null || !curr.item.equals(k)) return;
+            if (curr == null || !curr.item.equals(k)) return false;
             this.size--;
             prev.next = curr.next;
+            return true;
         } finally {
             this.numDeletes++;
             writeLock.unlock();

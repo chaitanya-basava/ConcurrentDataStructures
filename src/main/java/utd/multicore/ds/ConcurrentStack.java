@@ -20,32 +20,36 @@ public class ConcurrentStack<T extends Comparable<T>> extends DataStructure<T> {
         this.size.incrementAndGet();
     }
 
-    public void pop() {
+    public T pop() {
         Node<T> oldHead;
         Node<T> newHead;
         do {
             oldHead = top.get();
             if (oldHead == null) {
                 this.numDeletes++;
-                return;
+                return null;
             }
             newHead = oldHead.next;
         } while (!top.compareAndSet(oldHead, newHead));
         this.numDeletes++;
         this.size.decrementAndGet();
+        return oldHead.item;
     }
 
     @Override
     public void warmup(Class<T> clazz, int bound) {
     }
 
-    public void search(T k) {
+    public boolean search(T k) {
+        return false;
     }
 
-    public void add(T k) {
+    public boolean add(T k) {
+        return false;
     }
 
-    public void remove(T k) {
+    public boolean remove(T k) {
+        return false;
     }
 
     @Override

@@ -6,11 +6,11 @@ public abstract class DataStructure<T extends Comparable<T>> {
     protected int numDeletes = 0;
     protected int numSearches = 0;
 
-    public abstract void search(T k);
-    public abstract void add(T k);
-    public abstract void remove(T k);
+    public abstract boolean search(T k);
+    public abstract boolean add(T k);
+    public abstract boolean remove(T k);
     public abstract void push(T k);
-    public abstract void pop();
+    public abstract T pop();
     public abstract void warmup(Class<T> clazz, int bound);
 
     public int getNumAdds() {
