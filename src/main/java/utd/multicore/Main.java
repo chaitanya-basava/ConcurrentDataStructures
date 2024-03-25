@@ -4,8 +4,9 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utd.multicore.actor.Actor;
-import utd.multicore.actor.LinkedListActor;
+import utd.multicore.actor.ReadAndWriteActor;
 import utd.multicore.actor.StackActor;
+import utd.multicore.ds.bst.ConcurrentBST;
 import utd.multicore.ds.ConcurrentStack;
 import utd.multicore.ds.DataStructure;
 import utd.multicore.ds.linkedlist.ConcurrentLinkedList;
@@ -63,6 +64,7 @@ public class Main {
             case 0 -> new ConcurrentLinkedList<>();
             case 1 -> new FineGrainedConcurrentLinkedList<>();
             case 2 -> new ConcurrentStack<>();
+            case 3 -> new ConcurrentBST<>();
             default -> throw new IllegalStateException("Unexpected value: " + algoId);
         };
         ds.warmup(Integer.class, keySpace);
@@ -71,7 +73,7 @@ public class Main {
         long actorStartMillis = System.currentTimeMillis();
         for (int i = 0; i < numThreads; i++) {
             Actor actor = switch(algoId) {
-                case 0, 1 -> new LinkedListActor(i, csCount / numThreads, writeDist, ds, keySpace);
+                case 0, 1, 3 -> new ReadAndWriteActor(i, csCount / numThreads, writeDist, ds, keySpace);
                 case 2 -> new StackActor(i, csCount / numThreads, ds);
                 default -> throw new IllegalStateException("Unexpected value: " + algoId);
             };
@@ -86,7 +88,7 @@ public class Main {
         logger.info("Num of Adds: " + ds.getNumAdds());
         logger.info("Num of Deletes: " + ds.getNumDeletes());
         logger.info("Num of Searches: " + ds.getNumSearches());
-        logger.info("Total Ops: " + (ds.getNumAdds() + ds.getNumDeletes() + ds.getNumSearches()));
+//        logger.info("Total Ops: " + (ds.getNumAdds() + ds.getNumDeletes() + ds.getNumSearches()));
 
         double throughput = (double) csCount / (actorEndMillis - actorStartMillis);
         logger.info(String.format("System Throughput: %.2f ops/ms", throughput));

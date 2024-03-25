@@ -4,7 +4,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class TreeNode<T> {
-    public final T item;
+    public T item;
     public TreeNode<T> left, right;
     public final Lock lock = new ReentrantLock();
 

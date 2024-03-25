@@ -2,13 +2,13 @@ package utd.multicore.actor;
 
 import utd.multicore.ds.DataStructure;
 
-public class LinkedListActor extends Actor {
-    private final DataStructure<Integer> linkedList;
+public class ReadAndWriteActor extends Actor {
+    private final DataStructure<Integer> ds;
     private final int bound;
 
-    public LinkedListActor(int id, int csCount, double writeDist, DataStructure<Integer> linkedList, int bound) {
+    public ReadAndWriteActor(int id, int csCount, double writeDist, DataStructure<Integer> ds, int bound) {
         super(id, csCount, writeDist);
-        this.linkedList = linkedList;
+        this.ds = ds;
         this.bound = bound;
     }
 
@@ -19,14 +19,14 @@ public class LinkedListActor extends Actor {
             int number = random.nextInt(this.bound);
 
             if (operation < 100 - this.writeDist) {
-                this.linkedList.search(number);
+                this.ds.search(number);
             }
             else {
                 if (random.nextBoolean()) {
-                    this.linkedList.add(number);
+                    this.ds.add(number);
                 }
                 else {
-                    this.linkedList.remove(number);
+                    this.ds.remove(number);
                 }
             }
         }

@@ -1,5 +1,7 @@
 package utd.multicore.ds;
 
+import java.util.Random;
+
 public abstract class DataStructure<T extends Comparable<T>> {
     protected int size = 0;
     protected int numAdds = 0;
@@ -11,7 +13,19 @@ public abstract class DataStructure<T extends Comparable<T>> {
     public abstract boolean remove(T k);
     public abstract void push(T k);
     public abstract T pop();
-    public abstract void warmup(Class<T> clazz, int bound);
+
+    public void warmup(Class<T> clazz, int bound) {
+        Random random = new Random();
+        T value;
+
+        for (int i = 0; i < bound / 2; i++) {
+            if (clazz == Integer.class) {
+                value = clazz.cast(random.nextInt(bound));
+                if(!this.add(value)) i--;
+            }
+        }
+        this.numAdds = 0;
+    }
 
     public int getNumAdds() {
         return numAdds;
