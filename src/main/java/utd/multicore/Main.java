@@ -54,8 +54,8 @@ public class Main {
         int algoId = Integer.parseInt(cmd.getOptionValue("datastructure"));
         int numThreads = Integer.parseInt(cmd.getOptionValue("numThreads"));
         int keySpace = Integer.parseInt(cmd.getOptionValue("keySpace", String.valueOf(100)));
-        int writeDist = Integer.parseInt(cmd.getOptionValue("writeDistribution"));
-        int csCount = Integer.parseInt(cmd.getOptionValue("csCount", String.valueOf(1000000)));
+        int writeDist = Integer.parseInt(cmd.getOptionValue("writeDistribution", String.valueOf(100)));
+        int csCount = Integer.parseInt(cmd.getOptionValue("opCount", String.valueOf(1000000)));
 
         Actor[] actors = new Actor[numThreads];
         Thread[] actorThreads = new Thread[numThreads];
@@ -88,7 +88,6 @@ public class Main {
         logger.info("Num of Adds: " + ds.getNumAdds());
         logger.info("Num of Deletes: " + ds.getNumDeletes());
         logger.info("Num of Searches: " + ds.getNumSearches());
-//        logger.info("Total Ops: " + (ds.getNumAdds() + ds.getNumDeletes() + ds.getNumSearches()));
 
         double throughput = (double) csCount / (actorEndMillis - actorStartMillis);
         logger.info(String.format("System Throughput: %.2f ops/ms", throughput));
