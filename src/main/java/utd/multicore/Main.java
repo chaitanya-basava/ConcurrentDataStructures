@@ -12,6 +12,12 @@ import utd.multicore.ds.DataStructure;
 import utd.multicore.ds.linkedlist.ConcurrentLinkedList;
 import utd.multicore.ds.linkedlist.FineGrainedConcurrentLinkedList;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
@@ -53,7 +59,7 @@ public class Main {
         CommandLine cmd = Main.parseArgs(args);
         int algoId = Integer.parseInt(cmd.getOptionValue("datastructure"));
         int numThreads = Integer.parseInt(cmd.getOptionValue("numThreads"));
-        int keySpace = Integer.parseInt(cmd.getOptionValue("keySpace", String.valueOf(100)));
+        int keySpace = Integer.parseInt(cmd.getOptionValue("keySpace", String.valueOf(100))) + 1;
         int writeDist = Integer.parseInt(cmd.getOptionValue("writeDistribution", String.valueOf(100)));
         int csCount = Integer.parseInt(cmd.getOptionValue("opCount", String.valueOf(1000000)));
 
@@ -91,5 +97,32 @@ public class Main {
 
         double throughput = (double) csCount / (actorEndMillis - actorStartMillis);
         logger.info(String.format("System Throughput: %.2f ops/ms", throughput));
+
+        double avgTAT = 0;
+        for(Actor actor: actors) {
+            for(int i = 0; i < actor.getCsCount(); i++) {
+                avgTAT += actor.getTurnaroundTimeAtI(i);
+            }
+        }
+        avgTAT /= csCount;
+
+        String folderPath = "./tests/" + algoId + "-" + writeDist + "-" + (keySpace-1);
+        String fileName = folderPath + "/" + numThreads + ".csv";
+
+        Path path = Paths.get(folderPath);
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create directory: " + folderPath, e);
+            }
+        }
+
+        try(FileWriter writer = new FileWriter(fileName, true)) {
+            writer.append(String.valueOf(throughput)).append(",")
+                    .append(String.valueOf(avgTAT)).append("\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

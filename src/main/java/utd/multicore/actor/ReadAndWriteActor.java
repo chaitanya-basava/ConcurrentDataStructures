@@ -18,6 +18,7 @@ public class ReadAndWriteActor extends Actor {
             int operation = random.nextInt(100);
             int number = random.nextInt(this.bound);
 
+            long processRequested = System.currentTimeMillis();
             if (operation < 100 - this.writeDist) {
                 this.ds.search(number);
             }
@@ -29,6 +30,9 @@ public class ReadAndWriteActor extends Actor {
                     this.ds.remove(number);
                 }
             }
+            long processCompleted = System.currentTimeMillis();
+
+            this.setTurnaroundTimeAtI(i, processCompleted - processRequested);
         }
     }
 }

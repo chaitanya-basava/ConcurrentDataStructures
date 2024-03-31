@@ -14,7 +14,7 @@ fi
 
 mkdir "./tests/"
 
-rm "./tests/$ds_num-$n.txt"
+rm "./tests/$ds_num-$w-$key_space/$n.csv"
 
 for ((  i = 0;  i < num_runs;  i++ )); do
   java -jar "$jar_path" utd.multicore.Main -d "$ds_num" -n "$n" -w "$w" -k "$key_space"
