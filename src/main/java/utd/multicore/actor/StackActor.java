@@ -13,12 +13,16 @@ public class StackActor extends Actor {
     @Override
     public void run() {
         for(int i = 0; i < this.csCount; i++) {
+            long processRequested = System.currentTimeMillis();
             if (random.nextBoolean()) {
                 int number = random.nextInt(this.csCount / 100);
                 this.stack.push(number);
             } else {
                 this.stack.pop();
             }
+            long processCompleted = System.currentTimeMillis();
+
+            this.setTurnaroundTimeAtI(i, processCompleted - processRequested);
         }
     }
 }
