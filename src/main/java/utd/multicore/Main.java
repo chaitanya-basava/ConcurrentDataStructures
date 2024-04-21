@@ -4,13 +4,16 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utd.multicore.actor.Actor;
+import utd.multicore.actor.LazyBSTReadAndWriteActor;
 import utd.multicore.actor.ReadAndWriteActor;
 import utd.multicore.actor.StackActor;
 import utd.multicore.ds.bst.ConcurrentBST;
 import utd.multicore.ds.ConcurrentStack;
 import utd.multicore.ds.DataStructure;
+import utd.multicore.ds.bst.LazyLockingExternalBST;
 import utd.multicore.ds.linkedlist.ConcurrentLinkedList;
 import utd.multicore.ds.linkedlist.FineGrainedConcurrentLinkedList;
+import utd.multicore.ds.utils.LazyTreeNode;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -55,6 +58,16 @@ public class Main {
         return null;
     }
 
+    public static void buildExternalBSTWithSentinels(LazyLockingExternalBST<Integer> ds) {
+        ds.current = new LazyTreeNode<>(Integer.MAX_VALUE - 2);
+
+        int parentItem = Integer.MAX_VALUE - 1;
+        ds.parent = new LazyTreeNode<>(parentItem, ds.current, new LazyTreeNode<>(parentItem));
+
+        int grandParentItem = Integer.MAX_VALUE;
+        ds.grandParent = new LazyTreeNode<>(grandParentItem, ds.parent, new LazyTreeNode<>(grandParentItem));
+    }
+
     public static void main(String[] args) throws IllegalArgumentException, InterruptedException {
         CommandLine cmd = Main.parseArgs(args);
         int algoId = Integer.parseInt(cmd.getOptionValue("datastructure"));
@@ -71,8 +84,10 @@ public class Main {
             case 1 -> new FineGrainedConcurrentLinkedList<>();
             case 2 -> new ConcurrentStack<>();
             case 3 -> new ConcurrentBST<>();
+            case 4 -> new LazyLockingExternalBST<>();
             default -> throw new IllegalStateException("Unexpected value: " + algoId);
         };
+        if (algoId == 4) buildExternalBSTWithSentinels((LazyLockingExternalBST<Integer>) ds);
         ds.warmup(Integer.class, keySpace);
         logger.info("Warmup complete: " + ds.getSize());
 
@@ -81,6 +96,7 @@ public class Main {
             Actor actor = switch(algoId) {
                 case 0, 1, 3 -> new ReadAndWriteActor(i, csCount / numThreads, writeDist, ds, keySpace);
                 case 2 -> new StackActor(i, csCount / numThreads, ds);
+                case 4 -> new LazyBSTReadAndWriteActor(i, csCount / numThreads, writeDist, (LazyLockingExternalBST<Integer>) ds, keySpace);
                 default -> throw new IllegalStateException("Unexpected value: " + algoId);
             };
             actors[i] = actor;
