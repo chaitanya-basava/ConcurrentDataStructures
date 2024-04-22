@@ -36,7 +36,7 @@ public class LazyLockingExternalBST<T extends Comparable<T>> extends DataStructu
     @Override
     public boolean search(T k) {
         Window findResult = findNodeAndParent(k);
-        return findResult.current.item .compareTo(k) == 0;
+        return !findResult.current.marked && findResult.current.item .compareTo(k) == 0;
     }
 
     @Override
@@ -68,20 +68,41 @@ public class LazyLockingExternalBST<T extends Comparable<T>> extends DataStructu
 
     @Override
     public boolean remove(T k) {
-        return false;
+        Window findResult = findNodeAndParent(k);
+
+        if(findResult.current.item.compareTo(k) != 0) return false;
+
+        if(findResult.parent.right == findResult.current) {
+            if(findResult.grandParent.left == findResult.parent) {
+                findResult.grandParent.left = findResult.parent.left;
+            } else {
+                findResult.grandParent.right = findResult.parent.left;
+            }
+        } else {
+            if(findResult.grandParent.left == findResult.parent) {
+                findResult.grandParent.left = findResult.parent.right;
+            } else {
+                findResult.grandParent.right = findResult.parent.right;
+            }
+        }
+        findResult.parent.left = null;
+        findResult.parent.right = null;
+        this.size.decrementAndGet();
+
+        return true;
     }
 
     @Override
     public String toString() {
-        List<T> values = new ArrayList<>();
+        List<String> values = new ArrayList<>();
         collectBST(grandParent, values);
         return "[" + (values.size() - 3) + "] " + values;
     }
 
-    private void collectBST(LazyTreeNode<T> node, List<T> values) {
+    private void collectBST(LazyTreeNode<T> node, List<String> values) {
         if(node == null) return;
         collectBST(node.left, values);
-        if(node.left == null && node.right == null) values.add(node.item);
+        if(node.left == null && node.right == null) values.add(node.item + "(" + node.isLeaf + ")");
         collectBST(node.right, values);
     }
 

@@ -4,7 +4,6 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utd.multicore.actor.Actor;
-import utd.multicore.actor.LazyBSTReadAndWriteActor;
 import utd.multicore.actor.ReadAndWriteActor;
 import utd.multicore.actor.StackActor;
 import utd.multicore.ds.bst.ConcurrentBST;
@@ -94,9 +93,8 @@ public class Main {
         long actorStartMillis = System.currentTimeMillis();
         for (int i = 0; i < numThreads; i++) {
             Actor actor = switch(algoId) {
-                case 0, 1, 3 -> new ReadAndWriteActor(i, csCount / numThreads, writeDist, ds, keySpace);
+                case 0, 1, 3, 4 -> new ReadAndWriteActor(i, csCount / numThreads, writeDist, ds, keySpace);
                 case 2 -> new StackActor(i, csCount / numThreads, ds);
-                case 4 -> new LazyBSTReadAndWriteActor(i, csCount / numThreads, writeDist, (LazyLockingExternalBST<Integer>) ds, keySpace);
                 default -> throw new IllegalStateException("Unexpected value: " + algoId);
             };
             actors[i] = actor;
